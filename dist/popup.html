@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Readable Receipt</title>
+    
+    <!-- Web3 Fonts via Google Fonts CDN -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&family=Space+Mono&display=swap" rel="stylesheet">
+    
+    <!-- Phosphor Icons via jsDelivr CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.2"></script>
+
+    <style>
+        :root {
+            --bg: #09090b; 
+            --surface: #18181b;
+            --surface-hover: #27272a;
+            --text: #ededed;
+            --text-muted: #a1a1aa;
+            --border: #27272a;
+            --primary: #8b5cf6; 
+            --primary-glow: rgba(139, 92, 246, 0.4);
+            --ignore: #10b981; 
+            --review: #f59e0b;
+            --escalate: #ef4444;
+        }
+
+        body {
+            width: 360px;
+            min-height: 480px;
+            margin: 0;
+            padding: 20px;
+            font-family: 'Space Grotesk', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* --- Header --- */
+        .header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border);
+        }
+        .header i { font-size: 24px; color: var(--primary); }
+        h2 { margin: 0; font-size: 18px; font-weight: 700; letter-spacing: -0.5px; }
+
+        /* --- Input Area --- */
+        .input-group { margin-bottom: 16px; }
+        .input-label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        textarea {
+            width: 100%;
+            height: 90px;
+            background: #000000;
+            border: 1px solid var(--border);
+            color: var(--ignore); 
+            border-radius: 8px;
+            padding: 12px;
+            font-family: 'Space Mono', monospace;
+            font-size: 11px;
+            resize: none;
+            box-sizing: border-box;
+            transition: all 0.2s ease;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
+        }
+        textarea:focus { 
+            outline: none; 
+            border-color: var(--primary); 
+            box-shadow: 0 0 0 2px var(--primary-glow), inset 0 2px 4px rgba(0,0,0,0.5); 
+        }
+
+        /* --- Buttons --- */
+        button {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: none;
+        }
+        #translate-btn {
+            background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%);
+            color: white;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
+        }
+        #translate-btn:hover { filter: brightness(1.1); transform: translateY(-1px); }
+        #translate-btn:active { transform: translateY(1px); }
+        #translate-btn:disabled { background: var(--surface-hover); color: var(--text-muted); cursor: not-allowed; box-shadow: none; }
+        
+        #print-btn {
+            background: var(--surface);
+            color: var(--text);
+            border: 1px solid var(--border);
+            margin-top: 12px;
+        }
+        #print-btn:hover { background: var(--surface-hover); border-color: var(--text-muted); }
+
+        /* --- Result Card (With entrance animation) --- */
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        #result-card {
+            margin-top: 20px;
+            padding: 16px;
+            border-radius: 12px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            display: none; 
+            animation: slideUp 0.3s ease-out forwards;
+        }
+        
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 10px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            margin-bottom: 12px;
+            letter-spacing: 0.5px;
+        }
+        .summary-text { font-size: 14px; line-height: 1.6; margin-bottom: 16px; }
+        .asset-list { 
+            font-size: 12px; 
+            color: var(--text-muted); 
+            background: #000; 
+            padding: 10px; 
+            border-radius: 6px; 
+            font-family: 'Space Mono', monospace;
+            border: 1px solid var(--border);
+        }
+
+        /* Dynamic JS States */
+        .state-ignore .status-badge { background: rgba(16, 185, 129, 0.1); color: var(--ignore); border: 1px solid rgba(16, 185, 129, 0.2); }
+        .state-review .status-badge { background: rgba(245, 158, 11, 0.1); color: var(--review); border: 1px solid rgba(245, 158, 11, 0.2); }
+        .state-escalate .status-badge { background: rgba(239, 68, 68, 0.1); color: var(--escalate); border: 1px solid var(--escalate); box-shadow: 0 0 10px rgba(239, 68, 68, 0.2); }
+
+        /* --- Security Footer --- */
+        .footer {
+            margin-top: auto;
+            padding-top: 24px;
+            text-align: center;
+        }
+        .footer-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 10px;
+            color: var(--text-muted);
+            font-family: 'Space Mono', monospace;
+            background: var(--surface);
+            padding: 6px 10px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+        }
+
+        /* --- PRINT STYLES --- */
+        @media print {
+            body { background-color: white !important; color: black !important; width: 100% !important; height: auto !important; padding: 0 !important; }
+            .header, .input-group, #translate-btn, #print-btn, .footer { display: none !important; }
+            #result-card { border: 2px solid #ccc !important; background: white !important; color: black !important; box-shadow: none !important; margin: 0 !important; padding: 20px !important; }
+            .summary-text, .asset-list { color: black !important; }
+            .asset-list { background: #f4f4f5 !important; border: 1px solid #e4e4e7 !important; }
+        }
+    </style>
+</head>
+<body>
+    
+    <div class="header">
+        <i class="ph-fill ph-shield-check"></i>
+        <h2>Web3 Readable Receipt</h2>
+    </div>
+
+    <div class="input-group">
+        <div class="input-label">
+            <i class="ph ph-file-code"></i> Raw Calldata
+        </div>
+        <textarea id="tx-input" placeholder="0x..."></textarea>
+    </div>
+
+    <!-- Add these back in if you decide to send sender/receiver to the AI -->
+    
+    <div class="input-group">
+        <div class="input-label"><i class="ph ph-user"></i> From Address</div>
+        <textarea id="from-input" style="height: 40px;" placeholder="0x..."></textarea>
+    </div>
+    <div class="input-group">
+        <div class="input-label"><i class="ph ph-file-text"></i> To Address</div>
+        <textarea id="to-input" style="height: 40px;" placeholder="0x..."></textarea>
+    </div> 
+   
+
+    <button id="translate-btn">
+        <i class="ph-bold ph-sparkle"></i> Translate Transaction
+    </button>
+
+    <div id="result-card">
+        <div id="badge" class="status-badge"><i class="ph-bold ph-info"></i> ...</div>
+        <div id="summary" class="summary-text">...</div>
+        <div id="assets" class="asset-list"></div>
+    </div>
+
+    <button id="print-btn" style="display: none;">
+        <i class="ph-bold ph-printer"></i> Save as PDF
+    </button>
+
+    <div class="footer">
+        <div class="footer-badge">
+            <i class="ph-fill ph-lock-key"></i> Read-Only Analysis
+        </div>
+    </div>
+
+    <script type="module" src="popup.js"></script>
+</body>
+</html>

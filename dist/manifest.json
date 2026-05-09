@@ -1,0 +1,16 @@
+{
+  "manifest_version": 3,
+  "name": "Readable Receipt AI",
+  "version": "1.0",
+  "description": "Translates Web3 transactions using AI.",
+  "action": {
+    "default_popup": "popup.html"
+  },
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "permissions": [
+    "activeTab"
+  ]
+}
