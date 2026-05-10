@@ -26,12 +26,14 @@ For Chrome / Brave / Arc:
 2. Toggle Developer mode ON (top right corner).
 3. Click Load unpacked (top left corner).
 4. Select the dist folder located inside your project directory.
+
 For Microsoft Edge:
 1. Type edge://extensions/ in your address bar and press Enter.
 2. Toggle Developer mode ON (bottom left sidebar).
 3. Click Load unpacked (top right corner).
 4. Select the dist folder located inside your project directory.
-Step 5: Test It Out
+
+### Step 5: Test It Out
 1. Pin the Readable Receipt extension to your browser toolbar.
 2. Click the shield icon to open the extension.
 3. Paste test calldata (like 0x for a standard transfer) into the input box.
